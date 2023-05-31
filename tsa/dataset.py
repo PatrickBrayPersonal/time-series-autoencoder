@@ -78,11 +78,11 @@ class TimeSeriesDataset(object):
 
             if self.task == "prediction":
                 # lagged output used for prediction
-                y_hist.append(torch.FloatTensor(y[i - 1:i + self.seq_length - 1]).unsqueeze(0))
+                y_hist.append(torch.FloatTensor(y[i:i + self.seq_length]).unsqueeze(0))
                 # shifted target
                 target.append(torch.FloatTensor(y[i + self.seq_length:i + self.seq_length + self.prediction_window]))
             else:
-                y_hist.append(torch.FloatTensor(X[i - 1: i + self.seq_length - 1, :]).unsqueeze(0))
+                y_hist.append(torch.FloatTensor(X[i: i + self.seq_length, :]).unsqueeze(0))
                 target.append(
                     torch.FloatTensor(X[i + self.seq_length:i + self.seq_length + self.prediction_window, :]))
 
