@@ -6,8 +6,8 @@ import pkg_resources
 import torch
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from torch.utils.data import TensorDataset, DataLoader
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from torch.utils.data import DataLoader, TensorDataset
 
 
 class Tasks(Enum):
@@ -17,8 +17,17 @@ class Tasks(Enum):
 
 
 class TimeSeriesDataset(object):
-    def __init__(self, task: Tasks, data_path: str, categorical_cols: List[str], index_col: str, target_col: str,
-                 seq_length: int, batch_size: int, prediction_window: int = 1):
+    def __init__(
+        self,
+        task: Tasks,
+        data_path: str,
+        categorical_cols: List[str],
+        index_col: str,
+        target_col: str,
+        seq_length: int,
+        batch_size: int,
+        prediction_window: int = 1,
+    ):
         """
         :param task: name of the task
         :param data_path: path to datafile
@@ -34,7 +43,9 @@ class TimeSeriesDataset(object):
         data_path = pkg_resources.resource_filename("tsa", data_path)
         self.data = pd.read_csv(data_path, index_col=index_col)
         self.categorical_cols = categorical_cols
-        self.numerical_cols = list(set(self.data.columns) - set(categorical_cols) - set(target_col))
+        self.numerical_cols = list(
+            set(self.data.columns) - set(categorical_cols) - set(target_col)
+        )
         self.target_col = target_col
 
         self.seq_length = seq_length
@@ -43,8 +54,12 @@ class TimeSeriesDataset(object):
 
         transformations = [("scaler", StandardScaler(), self.numerical_cols)]
         if len(self.categorical_cols) > 0:
-            transformations.append(("encoder", OneHotEncoder(), self.categorical_cols))
-        self.preprocessor = ColumnTransformer(transformations, remainder="passthrough")
+            transformations.append(
+                ("encoder", OneHotEncoder(), self.categorical_cols)
+            )
+        self.preprocessor = ColumnTransformer(
+            transformations, remainder="passthrough"
+        )
 
         if self.task == "prediction":
             self.y_scaler = StandardScaler()
@@ -54,7 +69,9 @@ class TimeSeriesDataset(object):
         X = self.data.drop(self.target_col, axis=1)
         y = self.data[self.target_col]
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, shuffle=False)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, train_size=0.8, shuffle=False
+        )
         X_train = self.preprocessor.fit_transform(X_train)
         X_test = self.preprocessor.transform(X_test)
 
@@ -75,17 +92,43 @@ class TimeSeriesDataset(object):
         features, target, y_hist = [], [], []
 
         for i in range(1, nb_obs - self.seq_length - self.prediction_window):
-            features.append(torch.FloatTensor(X[i:i + self.seq_length, :]).unsqueeze(0))
+            features.append(
+                torch.FloatTensor(X[i : i + self.seq_length, :]).unsqueeze(0)
+            )
 
             if self.task == "prediction":
                 # lagged output used for prediction
-                y_hist.append(torch.FloatTensor(y[i:i + self.seq_length]).unsqueeze(0))
+                y_hist.append(
+                    torch.FloatTensor(y[i : i + self.seq_length]).unsqueeze(0)
+                )
                 # shifted target
-                target.append(torch.FloatTensor(y[i + self.seq_length:i + self.seq_length + self.prediction_window]))
-            else:
-                y_hist.append(torch.FloatTensor(X[i: i + self.seq_length, :]).unsqueeze(0))
                 target.append(
-                    torch.FloatTensor(X[i + self.seq_length:i + self.seq_length + self.prediction_window, :]))
+                    torch.FloatTensor(
+                        y[
+                            i
+                            + self.seq_length : i
+                            + self.seq_length
+                            + self.prediction_window
+                        ]
+                    )
+                )
+            else:
+                y_hist.append(
+                    torch.FloatTensor(X[i : i + self.seq_length, :]).unsqueeze(
+                        0
+                    )
+                )
+                target.append(
+                    torch.FloatTensor(
+                        X[
+                            i
+                            + self.seq_length : i
+                            + self.seq_length
+                            + self.prediction_window,
+                            :,
+                        ]
+                    )
+                )
 
         features_var = torch.cat(features)
         y_hist_var = torch.cat(y_hist)
@@ -105,10 +148,20 @@ class TimeSeriesDataset(object):
         train_dataset = self.frame_series(X_train, y_train)
         test_dataset = self.frame_series(X_test, y_test)
 
-        train_iter = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
-        test_iter = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
+        train_iter = DataLoader(
+            train_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            drop_last=True,
+        )
+        test_iter = DataLoader(
+            test_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            drop_last=True,
+        )
         return train_iter, test_iter, nb_features
-    
+
     def preprocess_infer_data(self):
         """Preprocessing function"""
         X = self.data.drop(self.target_col, axis=1)
@@ -120,13 +173,18 @@ class TimeSeriesDataset(object):
             y = self.y_scaler.fit_transform(y)
             return X, y
         return X, None
-    
+
     def get_infer_loader(self):
         X, y = self.preprocess_infer_data()
         infer_dataset = self.frame_series(X, y)
-        infer_iter = DataLoader(infer_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
+        infer_iter = DataLoader(
+            infer_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            drop_last=True,
+        )
         return infer_iter
-    
+
     def invert_scale(self, predictions):
         """
         Inverts the scale of the predictions
@@ -140,5 +198,7 @@ class TimeSeriesDataset(object):
         if self.task == "prediction":
             unscaled = self.y_scaler.inverse_transform(predictions)
         else:
-            unscaled = self.preprocessor.named_transformers_["scaler"].inverse_transform(predictions)
+            unscaled = self.preprocessor.named_transformers_[
+                "scaler"
+            ].inverse_transform(predictions)
         return torch.Tensor(unscaled)

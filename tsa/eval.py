@@ -1,13 +1,13 @@
 import os
 
 import matplotlib.pyplot as plt
+import mlflow
 import numpy as np
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
-import mlflow
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def evaluate(test_iter, criterion, model, config, ts):
@@ -24,17 +24,33 @@ def evaluate(test_iter, criterion, model, config, ts):
     eval_loss = 0.0
 
     model.eval()
-    for i, batch in tqdm(enumerate(test_iter), total=len(test_iter), desc="Evaluating"):
+    for i, batch in tqdm(
+        enumerate(test_iter), total=len(test_iter), desc="Evaluating"
+    ):
         with torch.no_grad():
             feature, y_hist, target = batch
-            output, att = model(feature.to(device), y_hist.to(device), return_attention=True)
+            output, att = model(
+                feature.to(device), y_hist.to(device), return_attention=True
+            )
 
             loss = criterion(output.to(device), target.to(device)).item()
             if config.training.reg1:
-                params = torch.cat([p.view(-1) for name, p in model.named_parameters() if 'bias' not in name])
+                params = torch.cat(
+                    [
+                        p.view(-1)
+                        for name, p in model.named_parameters()
+                        if "bias" not in name
+                    ]
+                )
                 loss += config.training.reg_factor1 * torch.norm(params, 1)
             if config.training.reg2:
-                params = torch.cat([p.view(-1) for name, p in model.named_parameters() if 'bias' not in name])
+                params = torch.cat(
+                    [
+                        p.view(-1)
+                        for name, p in model.named_parameters()
+                        if "bias" not in name
+                    ]
+                )
                 loss += config.training.reg_factor2 * torch.norm(params, 2)
             eval_loss += loss
 
@@ -48,14 +64,22 @@ def evaluate(test_iter, criterion, model, config, ts):
         preds, targets = ts.invert_scale(predictions), ts.invert_scale(targets)
 
         fig = plt.figure()
-        plt.plot(preds, linewidth=.3)
-        plt.plot(targets, linewidth=.3)
+        plt.plot(preds, linewidth=0.3)
+        plt.plot(targets, linewidth=0.3)
         plt.savefig("{}/preds.png".format(config.general.output_dir))
         mlflow.log_figure(fig, "preds.png")
 
-        torch.save(targets, os.path.join(config.general.output_dir, "targets.pt"))
-        torch.save(predictions, os.path.join(config.general.output_dir, "predictions.pt"))
-        torch.save(attentions, os.path.join(config.general.output_dir, "attentions.pt"))
+        torch.save(
+            targets, os.path.join(config.general.output_dir, "targets.pt")
+        )
+        torch.save(
+            predictions,
+            os.path.join(config.general.output_dir, "predictions.pt"),
+        )
+        torch.save(
+            attentions,
+            os.path.join(config.general.output_dir, "attentions.pt"),
+        )
 
     results = get_eval_report(eval_loss / len(test_iter), predictions, targets)
     file_eval = os.path.join(config.general.output_dir, "eval_results.txt")
@@ -68,7 +92,9 @@ def evaluate(test_iter, criterion, model, config, ts):
     return results
 
 
-def get_eval_report(eval_loss: float, predictions: torch.Tensor, targets: torch.Tensor):
+def get_eval_report(
+    eval_loss: float, predictions: torch.Tensor, targets: torch.Tensor
+):
     """
     Evaluates the accuracy.
 
