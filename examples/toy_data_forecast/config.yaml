@@ -16,8 +16,8 @@ training:
   denoising: False
   directions: 1
   gradient_accumulation_steps: 1
-  hidden_size_encoder: 64
-  hidden_size_decoder: 64
+  hidden_size_encoder: 2
+  hidden_size_decoder: 2
   input_att: True
   lr: 1e-5
   lrs_step_size: 5000

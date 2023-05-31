@@ -13,10 +13,18 @@
             "justMyCode": true
         },
         {
-            "name": "TOY",
+            "name": "TOY_forecast",
             "type": "python",
             "request": "launch",
-            "program": "examples/toy_data/run.py",
+            "program": "examples/toy_data_forecast/run.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "TOY_recon",
+            "type": "python",
+            "request": "launch",
+            "program": "examples/toy_data_recon/run.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }
