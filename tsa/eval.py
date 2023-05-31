@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
+import mlflow
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -46,10 +47,11 @@ def evaluate(test_iter, criterion, model, config, ts):
     if config.general.do_eval:
         preds, targets = ts.invert_scale(predictions), ts.invert_scale(targets)
 
-        plt.figure()
+        fig = plt.figure()
         plt.plot(preds, linewidth=.3)
         plt.plot(targets, linewidth=.3)
         plt.savefig("{}/preds.png".format(config.general.output_dir))
+        mlflow.log_figure(fig, "preds.png")
 
         torch.save(targets, os.path.join(config.general.output_dir, "targets.pt"))
         torch.save(predictions, os.path.join(config.general.output_dir, "predictions.pt"))
@@ -60,6 +62,7 @@ def evaluate(test_iter, criterion, model, config, ts):
     with open(file_eval, "w") as f:
         f.write("********* EVAL REPORT ********\n")
         for key, val in results.items():
+            mlflow.log_metric(key, val)
             f.write("  %s = %s\n" % (key, str(val)))
 
     return results

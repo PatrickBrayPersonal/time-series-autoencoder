@@ -38,4 +38,3 @@ general:
   output_dir: "output"
   save_steps: 10
   eval_during_training: True
-  ckpt: "checkpoint-60.ckpt"

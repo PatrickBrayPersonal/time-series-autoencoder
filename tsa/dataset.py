@@ -13,6 +13,7 @@ from torch.utils.data import TensorDataset, DataLoader
 class Tasks(Enum):
     prediction = "prediction"
     reconstruction = "reconstruction"
+    inference = "inference"
 
 
 class TimeSeriesDataset(object):
@@ -107,7 +108,25 @@ class TimeSeriesDataset(object):
         train_iter = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
         test_iter = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
         return train_iter, test_iter, nb_features
+    
+    def preprocess_infer_data(self):
+        """Preprocessing function"""
+        X = self.data.drop(self.target_col, axis=1)
+        y = self.data[self.target_col]
 
+        X = self.preprocessor.fit_transform(X)
+
+        if self.task == "prediction":
+            y = self.y_scaler.fit_transform(y)
+            return X, y
+        return X, None
+    
+    def get_infer_loader(self):
+        X, y = self.preprocess_infer_data()
+        infer_dataset = self.frame_series(X, y)
+        infer_iter = DataLoader(infer_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True)
+        return infer_iter
+    
     def invert_scale(self, predictions):
         """
         Inverts the scale of the predictions

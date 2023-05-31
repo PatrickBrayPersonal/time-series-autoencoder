@@ -78,3 +78,4 @@ def train(train_iter, test_iter, model, criterion, optimizer, config, ts):
                     "optimizer_state_dict": optimizer.state_dict(),
                     "loss": criterion
                 }, "{}/checkpoint-{}.ckpt".format(config.general.output_dir, global_step))
+    return model, criterion

@@ -21,6 +21,14 @@
             "justMyCode": true
         },
         {
+            "name": "TOY_forecast_infer",
+            "type": "python",
+            "request": "launch",
+            "program": "examples/toy_data_forecast_infer/run.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "TOY_recon",
             "type": "python",
             "request": "launch",
