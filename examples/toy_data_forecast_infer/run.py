@@ -23,8 +23,6 @@ def run(cfg):
     if cfg.general.do_eval and cfg.general.get("ckpt", False):
         model, _, loss, epoch = load_checkpoint(cfg.general.ckpt, model, optimizer, device)
         evaluate(test_iter, loss, model, cfg, ts)
-    print('complete')
-
 
 if __name__ == "__main__":
     run()

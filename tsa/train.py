@@ -3,7 +3,7 @@ import os
 import torch
 from tensorboardX import SummaryWriter
 from tqdm import tqdm
-
+import mlflow
 from .eval import evaluate
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

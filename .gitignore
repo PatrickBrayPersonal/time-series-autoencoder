@@ -134,3 +134,4 @@ output/
 .DS_Store
 
 outputs/*
+*outputs*
