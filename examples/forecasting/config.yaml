@@ -4,7 +4,7 @@ data:
   categorical_cols: [ ]
   index_col: "Date_Time"
   target_col: [ "AH" ]
-  data_path: "../data/AirQualityUCI.csv"
+  data_path: "../examples/forecasting/AirQualityUCI.csv"
   prediction_window: 1
   seq_length: 3
   task:

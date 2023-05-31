@@ -2,9 +2,9 @@ data:
   _target_: tsa.dataset.TimeSeriesDataset
   batch_size: 16
   categorical_cols: [ ]
-  index_col: "Date_Time"
+  index_col: "index"
   target_col: [ ]
-  data_path: "examples/forecasting/AirQualityUCI.csv"
+  data_path: "../../data/intermediate/Bearing_Sensor_Data_pt1_ds.csv"
   prediction_window: 1
   seq_length: 3
   task:
@@ -22,7 +22,7 @@ training:
   lrs_step_size: 5000
   max_grad_norm: 0.1
   num_epochs: 100
-  output_size: 13
+  output_size: 5
   reg1: True
   reg2: False
   reg_factor1: 1e-4
