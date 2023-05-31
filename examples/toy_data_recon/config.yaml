@@ -21,7 +21,7 @@ training:
   lr: 1e-5
   lrs_step_size: 5000
   max_grad_norm: 0.1
-  num_epochs: 10
+  num_epochs: 100
   output_size: 2
   reg1: True
   reg2: False
@@ -34,7 +34,7 @@ general:
   do_eval: True
   do_train: True
   logging_steps: 100
-
   output_dir: "output"
-  save_steps: 5000
+  save_steps: 1
   eval_during_training: True
+  ckpt: "checkpoint-60.ckpt"

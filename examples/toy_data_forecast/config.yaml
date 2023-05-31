@@ -1,6 +1,6 @@
 data:
   _target_: tsa.dataset.TimeSeriesDataset
-  batch_size: 4
+  batch_size: 2
   categorical_cols: [ ]
   index_col: "index"
   target_col: [ "B2" ]
@@ -35,7 +35,7 @@ general:
   do_eval: True
   do_train: True
   logging_steps: 100
-
   output_dir: "output"
-  save_steps: 5000
+  save_steps: 10
   eval_during_training: True
+  ckpt: "checkpoint-60.ckpt"
